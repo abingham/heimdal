@@ -3,21 +3,23 @@ import sys
 import cv2
 
 from .background_subtractor import BGSubtractor
-from .looper import Looper
+from .frame_reader import FrameReader
+from .writer import Writer
 
 
-def run(source):
-    frames = Looper(source)
+def run(source, output=None):
     bgsub = BGSubtractor(learning_rate=0.1)
 
-    while True:
+    while source.ok:
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-        frame = frames.next()
+        frame = source.next()
         fgframe = bgsub(frame)
 
         cv2.imshow('frame', fgframe)
+        if output:
+            output(fgframe)
 
 def parse_args(args):
     import argparse
@@ -31,6 +33,10 @@ def parse_args(args):
                         default=0,
                         type=int,
                         help='ID of camera to use.')
+    parser.add_argument('--output_file', '-o',
+                        dest='output_file',
+                        default=None,
+                        help='Output file.')
 
     return parser.parse_args()
 
@@ -39,4 +45,17 @@ if __name__ == '__main__':
     source = args.camera_id
     if args.input_file is not None:
         source = args.input_file
-    run(source)
+
+    freader = FrameReader(source)
+
+    writer = None
+    if args.output_file:
+        writer = Writer(
+            args.output_file,
+            width=int(freader.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)),
+            height=int(freader.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)))
+
+    run(freader, output=writer)
+
+    if writer:
+        writer.close()
