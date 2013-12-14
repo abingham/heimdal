@@ -7,7 +7,9 @@ from .frame_reader import FrameReader
 from .writer import Writer
 
 
-def run(source, output=None):
+def run(source,
+        threshold=200,
+        output=None):
     bgsub = BGSubtractor(learning_rate=0.1)
 
     while source.ok:
@@ -15,11 +17,14 @@ def run(source, output=None):
             break
 
         frame = source.next()
-        fgframe = bgsub(frame)
+        frame = bgsub(frame)
 
-        cv2.imshow('frame', fgframe)
+        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+        frame[frame<threshold] = 0
+
+        cv2.imshow('frame', frame)
         if output:
-            output(fgframe)
+            output(frame)
 
 def parse_args(args):
     import argparse
@@ -37,6 +42,11 @@ def parse_args(args):
                         dest='output_file',
                         default=None,
                         help='Output file.')
+    parser.add_argument('--intensity_threshold', '-I',
+                        default=200,
+                        dest='intensity_threshold',
+                        type=int,
+                        help='Minimum intensity for thresholding [0-255].')
 
     return parser.parse_args()
 
@@ -55,7 +65,9 @@ if __name__ == '__main__':
             width=int(freader.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)),
             height=int(freader.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)))
 
-    run(freader, output=writer)
+    run(freader,
+        threshold=args.intensity_threshold,
+        output=writer)
 
     if writer:
         writer.close()
