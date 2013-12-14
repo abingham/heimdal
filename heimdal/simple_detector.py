@@ -8,7 +8,8 @@ from .writer import Writer
 
 
 def run(source,
-        threshold=200,
+        threshold,
+        min_blob_area,
         output=None):
     bgsub = BGSubtractor(learning_rate=0.1)
 
@@ -16,13 +17,35 @@ def run(source,
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-        frame = source.next()
+        orig_frame = source.next()
+        frame = orig_frame
+        # frame = cv2.blur(orig_frame, (3, 3))
         frame = bgsub(frame)
 
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-        frame[frame<threshold] = 0
+        frame[frame<threshold] = threshold
 
-        cv2.imshow('frame', frame)
+        contours, hierarchy = cv2.findContours(frame,
+                                               cv2.RETR_LIST,
+                                               cv2.CHAIN_APPROX_SIMPLE)
+
+        # finding contour with maximum area and store it as best_cnt
+        best_cnt = None
+        max_area = 0
+        for cnt in contours:
+            area = cv2.contourArea(cnt)
+            if area > max_area and area > min_blob_area:
+                max_area = area
+                best_cnt = cnt
+
+        # finding centroids of best_cnt and draw a circle there
+        if best_cnt is not None:
+            M = cv2.moments(best_cnt)
+            cx,cy = int(M['m10'] / M['m00']), int(M['m01'] / M['m00'])
+            cv2.circle(orig_frame, (cx, cy), 5, 255, -1)
+
+
+        cv2.imshow('frame', orig_frame)
         if output:
             output(frame)
 
@@ -68,6 +91,7 @@ if __name__ == '__main__':
 
         run(freader,
             threshold=args.intensity_threshold,
+            min_blob_area=100,
             output=writer)
 
     finally:
