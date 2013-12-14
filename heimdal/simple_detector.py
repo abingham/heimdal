@@ -10,6 +10,7 @@ from .writer import Writer
 def run(source,
         threshold,
         min_blob_area,
+        display=False,
         output=None):
     bgsub = BGSubtractor(learning_rate=0.1)
 
@@ -45,7 +46,8 @@ def run(source,
             cv2.circle(orig_frame, (cx, cy), 5, 255, -1)
 
 
-        cv2.imshow('frame', orig_frame)
+        if display:
+            cv2.imshow('frame', orig_frame)
         if output:
             output(frame)
 
@@ -70,6 +72,10 @@ def parse_args(args):
                         dest='intensity_threshold',
                         type=int,
                         help='Minimum intensity for thresholding [0-255].')
+    parser.add_argument('--display', '-d',
+                        dest='display',
+                        action='store_true',
+                        help='Whether the video should be displayed.')
 
     return parser.parse_args()
 
@@ -92,6 +98,7 @@ if __name__ == '__main__':
         run(freader,
             threshold=args.intensity_threshold,
             min_blob_area=100,
+            display=args.display,
             output=writer)
 
     finally:
