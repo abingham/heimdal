@@ -8,6 +8,9 @@ class FrameReader:
         self.cap = cv2.VideoCapture(source)
         self.ok, self.frame = self.cap.read()
 
+    def close(self):
+        self.cap.release()
+
     def get(self, attr):
         return self.cap.get(attr)
 

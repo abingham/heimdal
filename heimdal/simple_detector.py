@@ -56,18 +56,21 @@ if __name__ == '__main__':
     if args.input_file is not None:
         source = args.input_file
 
-    freader = FrameReader(source)
+    try:
+        freader = FrameReader(source)
 
-    writer = None
-    if args.output_file:
-        writer = Writer(
-            args.output_file,
-            width=int(freader.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)),
-            height=int(freader.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)))
+        writer = None
+        if args.output_file:
+            writer = Writer(
+                args.output_file,
+                width=int(freader.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)),
+                height=int(freader.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)))
 
-    run(freader,
-        threshold=args.intensity_threshold,
-        output=writer)
+        run(freader,
+            threshold=args.intensity_threshold,
+            output=writer)
 
-    if writer:
-        writer.close()
+    finally:
+        if writer:
+            writer.close()
+        freader.close()
