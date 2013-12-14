@@ -12,6 +12,8 @@ print('size:',
       int(frames.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)))
 
 mog = cv2.BackgroundSubtractorMOG()
+frame = frames.next()
+fgmask = mog.apply(frame)
 
 # Define the # codec and create VideoWriter object
 #fourcc = cv2.cv.CV_FOURCC(*'THEO')
@@ -24,19 +26,13 @@ mog = cv2.BackgroundSubtractorMOG()
 #    (int(frames.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)),
 #     int(frames.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))))
 
-last_frame = frames.next()
-last_fgmask = mog.apply(last_frame)
-last_fgmask = cv2.cvtColor(last_fgmask, cv2.COLOR_GRAY2BGR)
-
 while frames.ok():
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
     frame = frames.next()
-    fgmask = mog.apply(frame)
+    fgmask = mog.apply(frame, fgmask, 0.1)
     fgmask = cv2.cvtColor(fgmask, cv2.COLOR_GRAY2BGR)
 
-    fgmask = fgmask | last_fgmask
-
-    cv2.imshow('frame', frame & fgmask)
+    cv2.imshow('frame', fgmask & frame)
     # out.write(frame)
