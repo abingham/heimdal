@@ -7,13 +7,15 @@ class Writer:
                  width,
                  height,
                  fourcc='THEO',
-                 framerate=20):
+                 framerate=20,
+                 color=False):
         self.filename = filename
         self.writer = cv2.VideoWriter(
             filename,
             cv2.cv.CV_FOURCC(*fourcc),
             framerate,
-            (width, height))
+            (width, height),
+            isColor=color)
 
     def close(self):
         self.writer.release()
