@@ -43,7 +43,7 @@ def parse_args(args):
                         default=None,
                         help='Output file.')
     parser.add_argument('--intensity_threshold', '-I',
-                        default=200,
+                        default=0,
                         dest='intensity_threshold',
                         type=int,
                         help='Minimum intensity for thresholding [0-255].')
