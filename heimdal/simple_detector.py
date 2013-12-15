@@ -63,6 +63,10 @@ def parse_args(args):
                         default=0,
                         type=int,
                         help='ID of camera to use.')
+    parser.add_argument('--fourcc',
+                        dest='fourcc',
+                        default='THEO',
+                        help='The "fourcc" code for the output video encoding.')
     parser.add_argument('--output_file', '-o',
                         dest='output_file',
                         default=None,
@@ -93,7 +97,8 @@ if __name__ == '__main__':
             writer = Writer(
                 args.output_file,
                 width=int(freader.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)),
-                height=int(freader.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)))
+                height=int(freader.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)),
+                fourcc=args.fourcc)
 
         run(freader,
             threshold=args.intensity_threshold,
